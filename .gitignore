@@ -1,0 +1,12 @@
+# Nodejs
+node_modules/
+
+
+# React
+out/
+dist/
+build/
+.cache/
+
+
+.env
