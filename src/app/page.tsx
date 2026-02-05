@@ -8,19 +8,13 @@ import ShowUsersButton from '@/components/ShowUsersModalButton';
 import { UsersModal } from '@/components/UsersModal';
 import { getChat } from './service/ChatService';
 
-interface User {
-  id: string;
-  display_name: string;
-  status: string;
-}
-
-interface Chat {
+export interface Chat {
   id: string;
   user1: string;
   user2: string;
 }
 
-interface Message {
+export interface Message {
   id: string;
   sender_id: string;
   display_name: string;
@@ -28,7 +22,7 @@ interface Message {
   created_at: string;
 }
 
-export default function Home() {
+export default  function Home() {
   const { currentUser, setCurrentUser } = useUser();
 
   const [chats, setChats] = useState<Chat[]>([]);
@@ -109,10 +103,11 @@ export default function Home() {
             loading={users.loading}
             error={users.error}
             onClose={modal.close}
-            onSelect={(user) => {
-              getChat(currentUser.id, user.id)
+            onSelect={async (user) => {
+              const chat = await getChat(currentUser.id, user.id)
               modal.close();
               fetch('/api/chats').then(r => r.json()).then(setChats);
+              setSelectedChat(chat);
             }}
           />  
         </>
@@ -169,6 +164,7 @@ export default function Home() {
                 value={text}
                 onChange={e => setText(e.target.value)}
                 placeholder="Type a message..."
+                autoFocus
                 onKeyDown={e => {
                   if (e.key === 'Enter') sendMessage();
                 }}
