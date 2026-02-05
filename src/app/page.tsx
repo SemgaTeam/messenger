@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@/lib/UserContext';
+import ShowUsersButton  from '@/components/ShowUsersButton';
 
 interface User {
   id: string;
@@ -89,6 +90,7 @@ export default function Home() {
     <div className="flex h-screen">
       {/* Левая панель */}
       <div className="w-80 bg-gray-800 border-r border-gray-700 flex flex-col p-4">
+              <ShowUsersButton cur_user={currentUser} />
         {/* Профиль */}
         <div className="mb-4 p-4 bg-gray-700 rounded shadow-sm">
           <p className="font-bold text-lg">{currentUser.display_name}</p>
