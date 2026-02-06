@@ -1,21 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useUser } from '@/lib/UserContext';
+import { useModal } from '@/hooks/UseModal';
+import { useUsers } from '@/hooks/UseUsers';
+import ShowUsersButton from '@/components/ShowUsersModalButton';
+import { UsersModal } from '@/components/UsersModal';
+import { getChat } from './service/ChatService';
 
-interface User {
-  id: string;
-  display_name: string;
-  status: string;
-}
-
-interface Chat {
+export interface Chat {
   id: string;
   user1: string;
   user2: string;
 }
 
-interface Message {
+export interface Message {
   id: string;
   sender_id: string;
   display_name: string;
@@ -23,18 +22,25 @@ interface Message {
   created_at: string;
 }
 
-export default function Home() {
+export default  function Home() {
   const { currentUser, setCurrentUser } = useUser();
 
-  const [users, setUsers] = useState<User[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState('');
 
+  const modal = useModal();
+  const users = useUsers();
+
+  const openModal = () => {
+    modal.open();
+    users.loadUsers();
+  }
+
   // Загрузка пользователей и чатов
   useEffect(() => {
-    fetch('/api/users').then(r => r.json()).then(setUsers);
+    users.loadUsers();
     fetch('/api/chats').then(r => r.json()).then(setChats);
   }, []);
 
@@ -64,7 +70,7 @@ export default function Home() {
       <div className="flex flex-col items-center justify-center h-screen">
         <h2 className="text-3xl font-bold mb-6">Select User</h2>
         <div className="flex flex-col gap-3">
-          {users.map(u => (
+          {users.users.map(u => (
             <button
               key={u.id}
               className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
@@ -89,6 +95,22 @@ export default function Home() {
     <div className="flex h-screen">
       {/* Левая панель */}
       <div className="w-80 bg-gray-800 border-r border-gray-700 flex flex-col p-4">
+        <>
+          <ShowUsersButton onClick={openModal}/>
+          <UsersModal
+            isOpen={modal.isOpen}
+            users={users.users}
+            loading={users.loading}
+            error={users.error}
+            onClose={modal.close}
+            onSelect={async (user) => {
+              const chat = await getChat(currentUser.id, user.id)
+              modal.close();
+              fetch('/api/chats').then(r => r.json()).then(setChats);
+              setSelectedChat(chat);
+            }}
+          />  
+        </>
         {/* Профиль */}
         <div className="mb-4 p-4 bg-gray-700 rounded shadow-sm">
           <p className="font-bold text-lg">{currentUser.display_name}</p>
@@ -142,6 +164,7 @@ export default function Home() {
                 value={text}
                 onChange={e => setText(e.target.value)}
                 placeholder="Type a message..."
+                autoFocus
                 onKeyDown={e => {
                   if (e.key === 'Enter') sendMessage();
                 }}
