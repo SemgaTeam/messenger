@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useRef } from 'react';
 import { useUser } from '@/lib/UserContext';
 import { useModal } from '@/hooks/UseModal';
 import { useUsers } from '@/hooks/UseUsers';
@@ -63,6 +63,13 @@ export default  function Home() {
     const newMessages = await fetch(`/api/messages/${selectedChat.id}`).then(r => r.json());
     setMessages(newMessages);
   };
+    
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
 
   // Если пользователь не выбран
   if (!currentUser) {
@@ -156,6 +163,7 @@ export default  function Home() {
                   <p>{m.text}</p>
                 </div>
               ))}
+              <div ref={bottomRef} />
             </div>
 
             <div className="flex gap-2">
