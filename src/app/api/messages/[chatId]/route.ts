@@ -22,7 +22,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ chatId:
 
 // POST /api/messages/[chatId]
 export async function POST(req: NextRequest, context: { params: Promise<{ chatId: string }> }) {
-  const { chatId } = await context.params; // ✅ unwrap params
+  const { chatId } = await context.params;
   const { sender_id, text, payload } = await req.json();
 
   const [message] = await query(

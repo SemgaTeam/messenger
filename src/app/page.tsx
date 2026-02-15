@@ -7,6 +7,7 @@ import { useUsers } from '@/hooks/UseUsers';
 import ShowUsersButton from '@/components/ShowUsersModalButton';
 import { UsersModal } from '@/components/UsersModal';
 import { getChat } from './service/ChatService';
+import { useChat } from '@/hooks/useChat';
 
 export interface Chat {
   id: string;
@@ -26,8 +27,7 @@ export default  function Home() {
   const { currentUser, setCurrentUser } = useUser();
 
   const [chats, setChats] = useState<Chat[]>([]);
-  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { messages, sendMessage, selectedChat, setSelectedChat } = useChat();
   const [text, setText] = useState('');
 
   const modal = useModal();
@@ -44,24 +44,14 @@ export default  function Home() {
     fetch('/api/chats').then(r => r.json()).then(setChats);
   }, []);
 
-  // Загрузка сообщений выбранного чата
-  useEffect(() => {
-    if (!selectedChat) return;
-    fetch(`/api/messages/${selectedChat.id}`).then(r => r.json()).then(setMessages);
-  }, [selectedChat]);
 
-  const sendMessage = async () => {
-    if (!text || !selectedChat || !currentUser) return;
+  const sendMessageAct = () => {
+    if (!text || !selectedChat || !currentUser)
+       return;
 
-    await fetch(`/api/messages/${selectedChat.id}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sender_id: currentUser.id, text }),
-    });
+    sendMessage(currentUser, text)
 
     setText('');
-    const newMessages = await fetch(`/api/messages/${selectedChat.id}`).then(r => r.json());
-    setMessages(newMessages);
   };
     
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -174,12 +164,12 @@ export default  function Home() {
                 placeholder="Type a message..."
                 autoFocus
                 onKeyDown={e => {
-                  if (e.key === 'Enter') sendMessage();
+                  if (e.key === 'Enter') sendMessageAct();
                 }}
               />
               <button
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-                onClick={sendMessage}
+                onClick={sendMessageAct}
               >
                 Send
               </button>
