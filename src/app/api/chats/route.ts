@@ -1,7 +1,6 @@
 // app/api/chats/route.ts
-import { NextResponse } from 'next/server';
-import { query } from '@/lib/db';
-
+import { NextResponse } from "next/server";
+import { query } from "@/lib/db";
 
 export async function GET() {
   const chats = await query(`
@@ -19,7 +18,7 @@ export async function POST(req: Request) {
 
   const [chat] = await query(
     `INSERT INTO direct_chats (user1_id, user2_id) VALUES ($1, $2) RETURNING *`,
-    [sortedIds[0], sortedIds[1]]
+    [sortedIds[0], sortedIds[1]],
   );
   return NextResponse.json(chat, { status: 201 });
 }
