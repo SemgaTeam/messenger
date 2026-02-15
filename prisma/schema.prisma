@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client"
+  output   = "generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model direct_chats {
+  id                                                 String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user1_id                                           String        @db.Uuid
+  user2_id                                           String        @db.Uuid
+  created_at                                         DateTime?     @default(now()) @db.Timestamp(6)
+  user_profiles_direct_chats_user1_idTouser_profiles user_profiles @relation("direct_chats_user1_idTouser_profiles", fields: [user1_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user_profiles_direct_chats_user2_idTouser_profiles user_profiles @relation("direct_chats_user2_idTouser_profiles", fields: [user2_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  messages                                           messages[]
+
+  @@unique([user1_id, user2_id])
+}
+
+model message_contents {
+  message_id String   @id @db.Uuid
+  text       String?
+  payload    Json?
+  messages   messages @relation(fields: [message_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model messages {
+  id               String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  sender_id        String            @db.Uuid
+  direct_chat_id   String            @db.Uuid
+  created_at       DateTime          @default(now()) @db.Timestamp(6)
+  edited_at        DateTime?         @db.Timestamp(6)
+  is_deleted       Boolean           @default(false)
+  message_contents message_contents?
+  direct_chats     direct_chats      @relation(fields: [direct_chat_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user_profiles    user_profiles     @relation(fields: [sender_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model user_profiles {
+  id                                                String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  display_name                                      String         @db.VarChar(50)
+  description                                       String?
+  status                                            String         @default("active") @db.VarChar(20)
+  created_at                                        DateTime?      @default(now()) @db.Timestamp(6)
+  direct_chats_direct_chats_user1_idTouser_profiles direct_chats[] @relation("direct_chats_user1_idTouser_profiles")
+  direct_chats_direct_chats_user2_idTouser_profiles direct_chats[] @relation("direct_chats_user2_idTouser_profiles")
+  messages                                          messages[]
+}

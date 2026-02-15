@@ -9,6 +9,10 @@ const pool = new Pool({
   database: process.env.PGDATABASE,
 });
 
+
+/**
+ * @deprecated Use prismaClient instead
+ */
 export async function query<T = any>(
   text: string,
   params?: any[],

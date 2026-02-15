@@ -1,29 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
-import { query } from "@/lib/db";
+import { prismaClient } from "@/lib/prisma";
 
-// GET /api/messages/[chatId]
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ chatId: string }> },
 ) {
-  const { chatId } = await context.params; // ✅ unwrap params
+  const { chatId } = await context.params;
 
-  const messages = await query(
-    `
-    SELECT m.id, m.sender_id, u.display_name, m.created_at, mc.text, mc.payload
-    FROM messages m
-    JOIN message_contents mc ON m.id = mc.message_id
-    JOIN user_profiles u ON m.sender_id = u.id
-    WHERE m.direct_chat_id = $1
-    ORDER BY m.created_at ASC
-  `,
-    [chatId],
-  );
+  const messages = await prismaClient.messages.findMany({
+    where: {
+      direct_chat_id: chatId,
+    },
 
-  return NextResponse.json(messages);
+    orderBy: {
+      created_at: "asc",
+    },
+
+    include: {
+      message_contents: true,
+      user_profiles: {
+        select: {
+          id: true,
+          display_name: true,
+
+        },
+      },
+    },
+  });
+
+  const messagesFlat = messages.map(msg => ({
+    id: msg.id,
+    sender_id: msg.sender_id,
+    display_name: msg.user_profiles.display_name,
+    created_at: msg.created_at,
+    text: msg.message_contents?.text || null,
+    payload: msg.message_contents?.payload || null,
+  }));
+  console.log(messagesFlat)
+
+  return NextResponse.json(messagesFlat);
 }
 
-// POST /api/messages/[chatId]
+
 export async function POST(
   req: NextRequest,
   context: { params: Promise<{ chatId: string }> },
@@ -31,15 +49,23 @@ export async function POST(
   const { chatId } = await context.params;
   const { sender_id, text, payload } = await req.json();
 
-  const [message] = await query(
-    `INSERT INTO messages (sender_id, direct_chat_id) VALUES ($1, $2) RETURNING *`,
-    [sender_id, chatId],
-  );
+  const message = await prismaClient.messages.create({
+    data: {
+      sender_id: sender_id,
+      direct_chat_id: chatId,
 
-  await query(
-    `INSERT INTO message_contents (message_id, text, payload) VALUES ($1, $2, $3)`,
-    [message.id, text, payload || null],
-  );
+      message_contents: {
+        create: {
+          text: text,
+          payload: payload || null
+        },
+      },
+    },
+
+    include: {
+      message_contents: true
+    }
+  });
 
   return NextResponse.json({ ...message, text, payload }, { status: 201 });
 }
