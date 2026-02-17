@@ -1,4 +1,4 @@
-import pkg from 'pg';
+import pkg from "pg";
 const { Pool } = pkg;
 
 const pool = new Pool({
@@ -9,7 +9,10 @@ const pool = new Pool({
   database: process.env.PGDATABASE,
 });
 
-export async function query<T = any>(text: string, params?: any[]): Promise<T[]> {
+export async function query<T = any>(
+  text: string,
+  params?: any[],
+): Promise<T[]> {
   const res = await pool.query(text, params);
   return res.rows;
 }
