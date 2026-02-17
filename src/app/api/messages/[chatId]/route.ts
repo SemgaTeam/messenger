@@ -36,7 +36,6 @@ export async function GET(
     text: msg.message_contents?.text || null,
     payload: msg.message_contents?.payload || null,
   }));
-  console.log(messagesFlat)
 
   return NextResponse.json(messagesFlat);
 }
