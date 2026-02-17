@@ -12,7 +12,7 @@ export async function getChat(
     });
 
     if (!res.ok) {
-      throw new Error("ChatAlready exist or database error; " + res.text);
+      throw new Error("Internal server error" + res.text);
     }
 
     const data = await res.json();
