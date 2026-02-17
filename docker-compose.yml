@@ -1,8 +1,6 @@
-version: "3.9"
-
 services:
   db:
-    image: postgres:15
+    image: postgres:latest
     container_name: messenger_db
     restart: always
     ports:
@@ -10,7 +8,7 @@ services:
     environment:
       POSTGRES_USER: ${PGUSER}
       POSTGRES_PASSWORD: ${PGPASSWORD}
-      POSTGRES_NAME: ${PGDATABASE}
+      POSTGRES_DB: ${PGDATABASE}
     volumes:
       - db_data:/var/lib/postgresql/data
 
