@@ -21,8 +21,9 @@ npm run dev
 ```
 
 All in docker:
-'''bash
+
+```bash
 docker compose up
-''''
+```
 
 Open in browser: <http://localhost:3000>
