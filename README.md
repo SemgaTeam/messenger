@@ -8,10 +8,10 @@ Install dependencies:
 npm install
 ```
 
-Start services:
+Start db:
 
 ```bash
-docker compose up
+docker compose up db
 ```
 
 Run dev server:
@@ -20,4 +20,9 @@ Run dev server:
 npm run dev
 ```
 
-Open in browser: http://localhost:3000
+All in docker:
+'''bash
+docker compose up
+''''
+
+Open in browser: <http://localhost:3000>
