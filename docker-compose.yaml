@@ -35,5 +35,21 @@ services:
       db:
         condition: service_healthy
 
+  ws:
+    build: ./websocket_server 
+    container_name: messenger_ws
+    restart: always
+    ports:
+      - "4000:4000"
+    env_file: .env
+    environment:
+      PGHOST: db
+    volumes:
+      - ./websocket_server:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   db_data:
